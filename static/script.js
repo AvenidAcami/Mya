@@ -78,7 +78,7 @@ async function loadComputers(cabinetId) {
     computers.forEach(computer => {
         const computerDiv = document.createElement('div');
         const computerLink = document.createElement('a');
-        computerLink.href = `/computer/${computer.id}`;
+        computerLink.href = `/computer/${cabinetId}/${computer.id}`;
         computerLink.textContent = `Компьютер: ${computer.name}`;
 
         const deleteButton = document.createElement('button');
@@ -90,6 +90,7 @@ async function loadComputers(cabinetId) {
         computerList.appendChild(computerDiv);
     });
 }
+
 
 // Добавление компьютера в кабинет
 async function addComputer(cabinetId) {

@@ -173,17 +173,28 @@ def computer(cabinet_id, computer_id):
     conn = sqlite3.connect('cabinets.db')
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM cabinets WHERE id = ?", (cabinet_id,))
-    cabinet_name = cursor.fetchone()[0]
+    cabinet_name = cursor.fetchone()
+    
+    if cabinet_name is None:
+        return "Кабинет не найден", 404
+
+    cabinet_name = cabinet_name[0]
 
     # Получаем имя компьютера
     db_name = f'cabinets/{cabinet_name}.db'
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM computers WHERE id = ?", (computer_id,))
-    computer_name = cursor.fetchone()[0]
+    computer_name = cursor.fetchone()
+
+    if computer_name is None:
+        return "Компьютер не найден", 404
+
+    computer_name = computer_name[0]
     conn.close()
 
-    return render_template('computer.html', computer_name=computer_name)
+    return render_template('computer.html', computer_name=computer_name, cabinet_name=cabinet_name)
+
 
 if __name__ == '__main__':
     # Создаем основную базу кабинетов, если ее нет
