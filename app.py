@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from flask import Flask, request, jsonify, render_template, redirect
+from flask import Flask, request, jsonify, render_template, redirect, abort
 
 app = Flask(__name__)
 
@@ -12,7 +12,7 @@ def init_main_db():
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS cabinets (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL
+                name TEXT NOT NULL UNIQUE
             )
         ''')
         conn.commit()
@@ -26,7 +26,7 @@ def init_cabinet_db(cabinet_name):
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS computers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL
+            name TEXT NOT NULL UNIQUE
         )
     ''')
     conn.commit()
@@ -67,10 +67,15 @@ def get_cabinets():
 def add_cabinet():
     data = request.get_json()
     cabinet_name = data.get('name')
-    
-    # Добавляем кабинет в основную базу данных
+
+    # Проверка на уникальность названия кабинета
     conn = sqlite3.connect('cabinets.db')
     cursor = conn.cursor()
+    cursor.execute("SELECT id FROM cabinets WHERE name = ?", (cabinet_name,))
+    if cursor.fetchone():
+        return jsonify({"error": "Cabinet with this name already exists"}), 400
+    
+    # Добавляем кабинет в основную базу данных
     cursor.execute("INSERT INTO cabinets (name) VALUES (?)", (cabinet_name,))
     conn.commit()
     conn.close()
@@ -81,15 +86,19 @@ def add_cabinet():
     return '', 204
 
 # Удалить кабинет и все его компьютеры
-@app.route('/delete_cabinet/<int:cabinet_id>', methods=['DELETE'])
-def delete_cabinet(cabinet_id):
+@app.route('/delete_cabinet/<cabinet_name>', methods=['DELETE'])
+def delete_cabinet(cabinet_name):
     conn = sqlite3.connect('cabinets.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT name FROM cabinets WHERE id = ?", (cabinet_id,))
-    cabinet_name = cursor.fetchone()[0]
     
+    # Проверяем, существует ли кабинет
+    cursor.execute("SELECT id FROM cabinets WHERE name = ?", (cabinet_name,))
+    cabinet = cursor.fetchone()
+    if not cabinet:
+        return jsonify({"error": "Cabinet not found"}), 404
+
     # Удаляем кабинет из основной базы
-    cursor.execute("DELETE FROM cabinets WHERE id = ?", (cabinet_id,))
+    cursor.execute("DELETE FROM cabinets WHERE name = ?", (cabinet_name,))
     conn.commit()
     conn.close()
 
@@ -98,15 +107,14 @@ def delete_cabinet(cabinet_id):
 
     return '', 204
 
-# Получить компьютеры в кабинете
-@app.route('/get_computers/<int:cabinet_id>', methods=['GET'])
-def get_computers(cabinet_id):
-    conn = sqlite3.connect('cabinets.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT name FROM cabinets WHERE id = ?", (cabinet_id,))
-    cabinet_name = cursor.fetchone()[0]
-    
+# Получить компьютеры в кабинете по названию
+@app.route('/get_computers/<cabinet_name>', methods=['GET'])
+def get_computers(cabinet_name):
     db_name = f'cabinets/{cabinet_name}.db'
+    
+    if not os.path.exists(db_name):
+        return jsonify({"error": "Cabinet not found"}), 404
+    
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
     cursor.execute("SELECT id, name FROM computers")
@@ -118,19 +126,24 @@ def get_computers(cabinet_id):
 @app.route('/add_computer', methods=['POST'])
 def add_computer():
     data = request.get_json()
-    cabinet_id = data.get('cabinet_id')
+    cabinet_name = data.get('cabinet_name')
     computer_name = data.get('name')
 
-    # Получаем имя кабинета
-    conn = sqlite3.connect('cabinets.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT name FROM cabinets WHERE id = ?", (cabinet_id,))
-    cabinet_name = cursor.fetchone()[0]
-
-    # Добавляем компьютер в базу кабинета
     db_name = f'cabinets/{cabinet_name}.db'
+    
+    # Проверяем, существует ли база данных кабинета
+    if not os.path.exists(db_name):
+        return jsonify({"error": "Cabinet not found"}), 404
+
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
+    
+    # Проверка на уникальность названия компьютера
+    cursor.execute("SELECT id FROM computers WHERE name = ?", (computer_name,))
+    if cursor.fetchone():
+        return jsonify({"error": "Computer with this name already exists"}), 400
+    
+    # Добавляем компьютер в базу кабинета
     cursor.execute("INSERT INTO computers (name) VALUES (?)", (computer_name,))
     conn.commit()
     conn.close()
@@ -140,24 +153,26 @@ def add_computer():
 
     return '', 204
 
-# Удалить компьютер
-@app.route('/delete_computer/<int:cabinet_id>/<int:computer_id>', methods=['DELETE'])
-def delete_computer(cabinet_id, computer_id):
-    # Получаем имя кабинета
-    conn = sqlite3.connect('cabinets.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT name FROM cabinets WHERE id = ?", (cabinet_id,))
-    cabinet_name = cursor.fetchone()[0]
-
-    # Получаем имя компьютера
+# Удалить компьютер по имени кабинета и имени компьютера
+@app.route('/delete_computer/<cabinet_name>/<computer_name>', methods=['DELETE'])
+def delete_computer(cabinet_name, computer_name):
     db_name = f'cabinets/{cabinet_name}.db'
+    
+    # Проверяем, существует ли база данных кабинета
+    if not os.path.exists(db_name):
+        return jsonify({"error": "Cabinet not found"}), 404
+
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
-    cursor.execute("SELECT name FROM computers WHERE id = ?", (computer_id,))
-    computer_name = cursor.fetchone()[0]
+    
+    # Проверяем, существует ли компьютер
+    cursor.execute("SELECT id FROM computers WHERE name = ?", (computer_name,))
+    computer = cursor.fetchone()
+    if not computer:
+        return jsonify({"error": "Computer not found"}), 404
 
     # Удаляем компьютер из базы кабинета
-    cursor.execute("DELETE FROM computers WHERE id = ?", (computer_id,))
+    cursor.execute("DELETE FROM computers WHERE name = ?", (computer_name,))
     conn.commit()
     conn.close()
 
@@ -166,35 +181,24 @@ def delete_computer(cabinet_id, computer_id):
 
     return '', 204
 
-# Страница характеристик компьютера
-@app.route('/computer/<int:cabinet_id>/<int:computer_id>')
-def computer(cabinet_id, computer_id):
-    # Получаем имя кабинета
-    conn = sqlite3.connect('cabinets.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT name FROM cabinets WHERE id = ?", (cabinet_id,))
-    cabinet_name = cursor.fetchone()
-    
-    if cabinet_name is None:
-        return "Кабинет не найден", 404
-
-    cabinet_name = cabinet_name[0]
-
-    # Получаем имя компьютера
+# Страница характеристик компьютера по названию кабинета и компьютера
+@app.route('/computer/<cabinet_name>/<computer_name>')
+def computer(cabinet_name, computer_name):
+    # Проверяем, существует ли база данных кабинета
     db_name = f'cabinets/{cabinet_name}.db'
+    if not os.path.exists(db_name):
+        return abort(404, description="Cabinet not found")
+
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
-    cursor.execute("SELECT name FROM computers WHERE id = ?", (computer_id,))
-    computer_name = cursor.fetchone()
-
-    if computer_name is None:
-        return "Компьютер не найден", 404
-
-    computer_name = computer_name[0]
+    cursor.execute("SELECT name FROM computers WHERE name = ?", (computer_name,))
+    computer = cursor.fetchone()
     conn.close()
 
-    return render_template('computer.html', computer_name=computer_name, cabinet_name=cabinet_name)
+    if not computer:
+        return abort(404, description="Computer not found")
 
+    return render_template('computer.html', computer_name=computer_name)
 
 if __name__ == '__main__':
     # Создаем основную базу кабинетов, если ее нет
