@@ -63,10 +63,21 @@ async function loadComputers(cabinetName) {
 
         computers.forEach(computer => {
             const computerDiv = document.createElement('div');
+
+            // Ссылка на страницу компьютера
             const computerLink = document.createElement('a');
             computerLink.href = `/computer/${encodeURIComponent(cabinetName)}/${encodeURIComponent(computer.name)}`;
             computerLink.textContent = computer.name;
+
+            // Кнопка для удаления компьютера
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Удалить компьютер';
+            deleteButton.onclick = () => deleteComputer(computer.name, cabinetName);
+
+            // Добавляем ссылку и кнопку удаления в элемент
             computerDiv.appendChild(computerLink);
+            computerDiv.appendChild(deleteButton);
+
             computerList.appendChild(computerDiv);
         });
     } catch (error) {
