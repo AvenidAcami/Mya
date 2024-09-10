@@ -1,0 +1,140 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f8ff;
+  color: #333;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header {
+  background-color: #1e90ff;
+  padding: 20px;
+  text-align: center;
+}
+
+.logo {
+  color: white;
+  font-size: 24px;
+}
+
+main {
+  display: flex;
+  flex: 1;
+}
+
+.sidebar {
+  background-color: #4682b4;
+  padding: 20px;
+  width: 250px;
+  color: white;
+  overflow-y: auto; /* Прокрутка для большого количества кабинетов */
+}
+
+.sidebar h2 {
+  margin-bottom: 10px;
+  color: #add8e6;
+}
+
+/* Стили для блоков кабинетов */
+.cabinet {
+  background-color: #add8e6;
+  margin-bottom: 10px;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  color: white;
+}
+
+.cabinet:hover {
+  background-color: #5f9ea0; /* Изменение фона при наведении */
+}
+
+.cabinet span {
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.computer-list {
+  margin-left: 20px; /* Лесенка для списка компьютеров */
+}
+
+.add-cabinet-btn,
+.add-computer-btn {
+  background-color: #87ceeb;
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.add-cabinet-btn:hover,
+.add-computer-btn:hover {
+  background-color: #5f9ea0; /* Изменение цвета кнопки при наведении */
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+  background-color: white;
+}
+
+.delete-btn {
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 24px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.add-computer-btn {
+  background-color: #87ceeb;
+  margin-top: 5px;
+}
+
+/* Стили для списка компьютеров */
+.computer-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 5px;
+  padding: 5px 10px;
+  background-color: #f0f8ff;
+  border-radius: 5px;
+}
+
+.computer-item span {
+  font-weight: bold;
+}
+
+h2 {
+  color: #1e90ff;
+}
