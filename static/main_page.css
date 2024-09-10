@@ -195,9 +195,8 @@ h2 {
   border-radius: 5px;
   margin-top: 5px;
   transition: background-color 0.3s ease;
-  max-width: 450px;
+  max-width: 100%;
   overflow: hidden;
-  text-overflow: ellipsis;
   /* word-wrap:break-word; */
 
 }

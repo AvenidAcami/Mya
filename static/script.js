@@ -67,6 +67,7 @@ async function toggleComputers(cabinetName) {
     }
 }
 
+// Загрузка списка компьютеров в кабинете и отображение их как кнопок
 async function loadComputers(cabinetName) {
     const response = await fetch(`/get_computers/${cabinetName}`);
     const computers = await response.json();
@@ -76,20 +77,38 @@ async function loadComputers(cabinetName) {
     computers.forEach(computer => {
         const computerDiv = document.createElement('div');
         computerDiv.className = 'buttons_computer';
-        const computerLink = document.createElement('a');
-        computerLink.className = 'to_computer';
-        computerLink.href = `/computer/${cabinetName}/${encodeURIComponent(computer.name)}`;
-        computerLink.textContent = computer.name;
+
+        // Теперь создаем кнопку вместо ссылки
+        const computerButton = document.createElement('button');
+        computerButton.className = 'to_computer';
+        computerButton.textContent = computer.name;
+        computerButton.onclick = () => loadComputerDetails(cabinetName, computer.name);  // При клике грузим информацию о компьютере
 
         const deleteButton = document.createElement('button');
         deleteButton.className = 'delete-btn';
         deleteButton.textContent = '×';
         deleteButton.onclick = () => deleteComputer(computer.name, cabinetName);
 
-        computerDiv.appendChild(computerLink);
+        computerDiv.appendChild(computerButton);
         computerDiv.appendChild(deleteButton);
         computerList.appendChild(computerDiv);
     });
+}
+
+// Функция для загрузки данных компьютера и отображения в блоке .content
+async function loadComputerDetails(cabinetName, computerName) {
+    const response = await fetch(`/computer/${cabinetName}/${computerName}`);
+    
+    // Проверяем, был ли успешный ответ
+    if (response.ok) {
+        const htmlContent = await response.text(); // Получаем HTML от сервера
+
+        // Обновляем содержимое блока content
+        const contentDiv = document.querySelector('.content');
+        contentDiv.innerHTML = htmlContent;
+    } else {
+        alert('Ошибка загрузки информации о компьютере.');
+    }
 }
 
 // Удаление компьютера
