@@ -17,14 +17,16 @@ body {
 }
 
 header {
-  background-color: #1e90ff;
+  background-color: #3e4da2;
   padding: 20px;
-  text-align: center;
+  text-align: left;
 }
 
 .logo {
   color: white;
   font-size: 24px;
+  height: 50px;
+  /* width: 2000px; */
 }
 
 main {
@@ -33,7 +35,7 @@ main {
 }
 
 .sidebar {
-  background-color: #4682b4;
+  background-color: #5e71dc;
   padding: 20px;
   width: 500px;
   color: white;
@@ -42,12 +44,12 @@ main {
 
 .sidebar h2 {
   margin-bottom: 10px;
-  color: #add8e6;
+  color: #ffffff;
 }
 
 /* Стили для блоков кабинетов */
 .cabinet {
-  background-color: #add8e6;
+  background-color: #3e4da2;
   margin-bottom: 10px;
   padding: 10px;
   display: block;
@@ -76,9 +78,23 @@ main {
   margin-left: 20px; /* Лесенка для списка компьютеров */
 }
 
-.add-cabinet-btn,
+.add-cabinet-btn{
+  background-color: #3e4da2;
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 10px;
+  transition: background-color 0.3s ease;
+}
+
 .add-computer-btn {
-  background-color: #87ceeb;
+  background-color: #5e71dc;
   border: none;
   color: white;
   padding: 8px 12px;
@@ -96,7 +112,7 @@ main {
 .add-computer-btn:hover,
 .to_computer:hover,
 .cabinet_button:hover {
-  background-color: #5f9ea0; /* Изменение цвета кнопки при наведении */
+  background-color: #394462; /* Изменение цвета кнопки при наведении */
 }
 
 .content {
@@ -106,7 +122,7 @@ main {
 }
 
 .delete-btn {
-  background-color: red;
+  background-color: rgb(254, 102, 102);
   color: white;
   border: none;
   border-radius: 50%;
@@ -122,7 +138,7 @@ main {
 }
 
 .add-computer-btn {
-  background-color: #87ceeb;
+  background-color: #5e71dc;
   margin-top: 5px;
 }
 
@@ -161,7 +177,7 @@ h2 {
   font-weight: bold;
   display: inline-block; */
 
-  background-color: #87ceeb;
+  background-color: #5e71dc;
   border: none;
   color: white;
   padding: 8px 12px;
@@ -183,7 +199,7 @@ h2 {
 }
 
 .to_computer{
-  background-color: #87ceeb;
+  background-color: #5e71dc;
   border: none;
   color: white;
   padding: 8px 12px;
@@ -199,4 +215,18 @@ h2 {
   overflow: hidden;
   /* word-wrap:break-word; */
 
+}
+
+#main_header{
+  text-align: center;
+}
+
+.top_main_info{
+  margin-top: 100px;
+  font-size: 30px;
+}
+
+.main_info{
+  margin-left: 30px;
+  margin-right: 30px;
 }

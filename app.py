@@ -52,6 +52,7 @@ def init_computer_db(cabinet_name, computer_name):
 def index():
     return render_template('index.html')
 
+
 # Получить список кабинетов
 @app.route('/get_cabinets', methods=['GET'])
 def get_cabinets():

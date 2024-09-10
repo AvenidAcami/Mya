@@ -9,16 +9,21 @@
 <body>
     <div class="container">
         <header>
-            <h1 class="logo">ЛОГОТИП</h1>
+            <img src="{{ url_for('static', filename='ugtu.jpeg') }}" alt="Описание изображения">
         </header>
         <main>
             <aside class="sidebar">
-                <h2>Кабинеты</h2>
+                <h2>Кабинеты:</h2>
                 <div id="cabinet-list"></div>
                 <button class="add-cabinet-btn" onclick="addCabinet()">Добавить кабинет</button>
             </aside>
             <section class="content">
-                <h2 id="computer-details">Характеристики компа</h2>
+                <div class="top_main_info">
+                    <h2 id="main_header">Сайт с компами.</h2>
+                </div>
+                <div class="main_info">
+                    <h2>Тут много разного текста. Бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла-бла.</h2>
+                </div>
             </section>
         </main>
     </div>
