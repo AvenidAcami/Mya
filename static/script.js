@@ -1,4 +1,4 @@
-// Загрузка списка кабинетов
+// Загрузка кабинетов
 async function loadCabinets() {
     const response = await fetch('/get_cabinets');
     const cabinets = await response.json();
@@ -20,7 +20,7 @@ async function loadCabinets() {
         const addComputerButton = document.createElement('button');
         addComputerButton.className = 'add-computer-btn';
         addComputerButton.textContent = 'Добавить оборудование';
-        addComputerButton.onclick = () => addComputer(cabinet.name);
+        addComputerButton.onclick = () => showComputerForm(cabinet.name);
 
         const deleteButton = document.createElement('button');
         deleteButton.className = 'delete-btn';
@@ -30,44 +30,91 @@ async function loadCabinets() {
         const computerList = document.createElement('div');
         computerList.id = `computers-${cabinet.name}`;
         computerList.className = 'computer-list';
+        computerList.style.display = 'none'; // Изначально скрываем список оборудования
 
         buttonsDiv.appendChild(button);
         buttonsDiv.appendChild(addComputerButton);
-        buttonsDiv.appendChild(deleteButton); 
-        cabinetDiv.appendChild(buttonsDiv);  
+        buttonsDiv.appendChild(deleteButton);
+        cabinetDiv.appendChild(buttonsDiv);
         cabinetDiv.appendChild(computerList);
 
         cabinetList.appendChild(cabinetDiv);
     });
 }
 
-// Добавление компьютера в кабинет
-async function addComputer(cabinetName) {
-    const computerName = prompt('Введите название оборудования:');
-    if (computerName) {
-        await fetch('/add_computer', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ cabinet_name: cabinetName, name: computerName })
-        });
-        await loadComputers(cabinetName);
-    }
-}
-
-// Переключение отображения списка компьютеров
-async function toggleComputers(cabinetName) {
+// Функция для открытия/закрытия списка оборудования
+function toggleComputers(cabinetName) {
     const computerList = document.getElementById(`computers-${cabinetName}`);
-    if (computerList.style.display === 'none' || computerList.style.display === '') {
-        await loadComputers(cabinetName);
+    if (computerList.style.display === 'none') {
         computerList.style.display = 'block';
+        loadComputers(cabinetName); // Загружаем список оборудования при первом открытии
     } else {
         computerList.style.display = 'none';
     }
 }
 
-// Загрузка списка компьютеров в кабинете и отображение их как кнопок
+// Добавление кабинета
+function addCabinet() {
+    const cabinetName = prompt("Введите название кабинета:");
+    if (!cabinetName) return;
+
+    fetch('/add_cabinet', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name: cabinetName })
+    }).then(response => {
+        if (response.status === 204) {
+            loadCabinets();
+        } else {
+            alert("Кабинет с таким названием уже существует.");
+        }
+    });
+}
+
+// Добавление компьютера
+function showComputerForm(cabinetName) {
+    const contentDiv = document.querySelector('.content');
+    contentDiv.innerHTML = `
+        <h2>Добавить оборудование в кабинет ${cabinetName}</h2>
+        <form id="add-computer-form">
+            <label for="name">Название оборудования:</label>
+            <input type="text" id="name" name="name" required><br>
+
+            <label for="type">Тип оборудования:</label>
+            <select id="type" name="type">
+                <option value="comp">Компьютер</option>
+                <option value="laptop">Ноутбук</option>
+                <option value="monitor">Монитор</option>
+                <option value="projector">Проектор</option>
+                <option value="printer">Принтер</option>
+                <option value="monoblock">Моноблок</option>
+                <option value="interactive_board">Интерактивная доска</option>
+            </select><br>
+
+            <button type="submit">Добавить оборудование</button>
+        </form>
+    `;
+
+    document.getElementById('add-computer-form').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const name = document.getElementById('name').value;
+        const type = document.getElementById('type').value;
+
+        await fetch('/add_computer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ cabinet_name: cabinetName, name, type })
+        });
+
+        loadComputers(cabinetName);
+    });
+}
+
+// Загрузка оборудования в кабинете
 async function loadComputers(cabinetName) {
     const response = await fetch(`/get_computers/${cabinetName}`);
     const computers = await response.json();
@@ -76,70 +123,58 @@ async function loadComputers(cabinetName) {
 
     computers.forEach(computer => {
         const computerDiv = document.createElement('div');
-        computerDiv.className = 'buttons_computer';
+        computerDiv.className = 'computer-item';
 
-        // Теперь создаем кнопку вместо ссылки
         const computerButton = document.createElement('button');
         computerButton.className = 'to_computer';
         computerButton.textContent = computer.name;
-        computerButton.onclick = () => loadComputerDetails(cabinetName, computer.name);  // При клике грузим информацию о компьютере
-
-        const deleteButton = document.createElement('button');
-        deleteButton.className = 'delete-btn';
-        deleteButton.textContent = '×';
-        deleteButton.onclick = () => deleteComputer(computer.name, cabinetName);
+        computerButton.onclick = () => showCharacteristicsForm(cabinetName, computer.name);
 
         computerDiv.appendChild(computerButton);
-        computerDiv.appendChild(deleteButton);
         computerList.appendChild(computerDiv);
     });
 }
 
-// Функция для загрузки данных компьютера и отображения в блоке .content
-async function loadComputerDetails(cabinetName, computerName) {
-    const response = await fetch(`/computer/${cabinetName}/${computerName}`);
-    
-    // Проверяем, был ли успешный ответ
-    if (response.ok) {
-        const htmlContent = await response.text(); // Получаем HTML от сервера
+// Показ формы для ввода характеристик
+async function showCharacteristicsForm(cabinetName, computerName) {
+    const contentDiv = document.querySelector('.content');
+    contentDiv.innerHTML = `<h2>Характеристики для ${computerName}</h2>
+        <form id="characteristics-form">
+            <div id="characteristics-container"></div>
+            <button type="submit">Сохранить характеристики</button>
+        </form>`;
 
-        // Обновляем содержимое блока content
-        const contentDiv = document.querySelector('.content');
-        contentDiv.innerHTML = htmlContent;
-    } else {
-        alert('Ошибка загрузки информации о компьютере.');
-    }
-}
+    const response = await fetch(`/get_characteristics/${cabinetName}/${computerName}`);
+    const characteristics = await response.json();
 
-// Удаление компьютера
-async function deleteComputer(computerName, cabinetName) {
-    if (confirm('Вы уверены, что хотите удалить этот компьютер?')) {
-        await fetch(`/delete_computer/${cabinetName}/${computerName}`, { method: 'DELETE' });
-        await loadComputers(cabinetName);
-    }
-}
+    const container = document.getElementById('characteristics-container');
+    container.innerHTML = '';
 
-// Удаление кабинета
-async function deleteCabinet(cabinetName) {
-    if (confirm('Вы уверены, что хотите удалить этот кабинет?')) {
-        await fetch(`/delete_cabinet/${cabinetName}`, { method: 'DELETE' });
-        loadCabinets();
-    }
-}
+    characteristics.forEach(characteristic => {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = characteristic;
+        input.placeholder = characteristic;
+        container.appendChild(input);
+        container.appendChild(document.createElement('br'));
+    });
 
-// Добавление нового кабинета
-async function addCabinet() {
-    const cabinetName = prompt('Введите номер кабинета:');
-    if (cabinetName) {
-        await fetch('/add_cabinet', {
+    document.getElementById('characteristics-form').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        const data = {};
+        formData.forEach((value, key) => data[key] = value);
+
+        await fetch(`/save_characteristics/${cabinetName}/${computerName}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ name: cabinetName })
+            body: JSON.stringify({ characteristics: data })
         });
-        loadCabinets();
-    }
+
+        alert('Характеристики сохранены!');
+    });
 }
 
-loadCabinets();
+document.addEventListener('DOMContentLoaded', loadCabinets);
