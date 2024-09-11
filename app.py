@@ -43,7 +43,7 @@ def init_computer_db(cabinet_name, computer_name):
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS characteristics (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
+                name TEXT NOT NULL UNIQUE,
                 value TEXT NOT NULL
             )
         ''')
@@ -125,7 +125,7 @@ def get_computers(cabinet_name):
 
     return jsonify([{"name": c[0]} for c in computers])
 
-# Получить характеристики для оборудования
+# Получить характеристики для оборудования (с отображением сохраненных значений)
 @app.route('/get_characteristics/<cabinet_name>/<computer_name>', methods=['GET'])
 def get_characteristics(cabinet_name, computer_name):
     conn = sqlite3.connect(f'cabinets/{cabinet_name}.db')
@@ -134,9 +134,10 @@ def get_characteristics(cabinet_name, computer_name):
     computer_type = cursor.fetchone()[0]
     conn.close()
 
-    characteristics = {
-        "comp": ["Процессор", "ОЗУ", "Жесткий диск", "Видеокарта"],
-        "laptop": ["Процессор", "ОЗУ", "SSD", "Диагональ экрана"],
+    # Возможные характеристики в зависимости от типа оборудования
+    characteristics_template = {
+        "comp": ["Процессор", "ОЗУ", "Накопитель", "Видеокарта"],
+        "laptop": ["Процессор", "ОЗУ", "Накопитель", "Диагональ экрана"],
         "monitor": ["Диагональ", "Разрешение", "Частота обновления"],
         "projector": ["Разрешение", "Яркость", "Контрастность"],
         "printer": ["Тип печати", "Разрешение печати", "Скорость печати"],
@@ -144,9 +145,79 @@ def get_characteristics(cabinet_name, computer_name):
         "interactive_board": ["Размер доски", "Разрешение", "Поддержка касаний"]
     }
 
-    return jsonify(characteristics.get(computer_type, []))
+    # Получаем сохраненные характеристики
+    conn = sqlite3.connect(f'cabinets/{cabinet_name}_{computer_name}.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, value FROM characteristics")
+    saved_characteristics = {row[0]: row[1] for row in cursor.fetchall()}
+    conn.close()
 
-# Сохранить характеристики оборудования
+    # Возвращаем шаблон характеристик с сохраненными значениями, если они есть
+    characteristics = []
+    for characteristic in characteristics_template.get(computer_type, []):
+        characteristics.append({
+            'name': characteristic,
+            'value': saved_characteristics.get(characteristic, "")
+        })
+
+    return jsonify(characteristics)
+
+# Удалить кабинет
+@app.route('/delete_cabinet/<cabinet_name>', methods=['DELETE'])
+def delete_cabinet(cabinet_name):
+    conn = sqlite3.connect('cabinets.db')
+    cursor = conn.cursor()
+    
+    # Удаляем кабинет из таблицы cabinets
+    cursor.execute("DELETE FROM cabinets WHERE name = ?", (cabinet_name,))
+    
+    if cursor.rowcount == 0:
+        return jsonify({"error": "Cabinet not found"}), 404
+
+    conn.commit()
+    conn.close()
+
+    # Удаляем базу данных для этого кабинета
+    db_name = f'cabinets/{cabinet_name}.db'
+    if os.path.exists(db_name):
+        os.remove(db_name)
+    
+    # Удаляем базы данных характеристик для оборудования в этом кабинете
+    for file in os.listdir('cabinets'):
+        if file.startswith(f'{cabinet_name}_'):
+            os.remove(f'cabinets/{file}')
+
+    return '', 204
+
+# Удалить оборудование
+@app.route('/delete_computer/<cabinet_name>/<computer_name>', methods=['DELETE'])
+def delete_computer(cabinet_name, computer_name):
+    db_name = f'cabinets/{cabinet_name}.db'
+
+    if not os.path.exists(db_name):
+        return jsonify({"error": "Cabinet not found"}), 404
+
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+
+    # Удаляем компьютер из таблицы computers
+    cursor.execute("DELETE FROM computers WHERE name = ?", (computer_name,))
+
+    if cursor.rowcount == 0:
+        return jsonify({"error": "Computer not found"}), 404
+
+    conn.commit()
+    conn.close()
+
+    # Удаляем базу данных характеристик для этого компьютера
+    computer_db = f'cabinets/{cabinet_name}_{computer_name}.db'
+    if os.path.exists(computer_db):
+        os.remove(computer_db)
+
+    return '', 204
+
+
+# Сохранить или обновить характеристики оборудования
 @app.route('/save_characteristics/<cabinet_name>/<computer_name>', methods=['POST'])
 def save_characteristics(cabinet_name, computer_name):
     data = request.get_json()
@@ -159,8 +230,13 @@ def save_characteristics(cabinet_name, computer_name):
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
 
+    # Для каждой характеристики проверяем, существует ли она, если да, обновляем, если нет — добавляем
     for name, value in characteristics.items():
-        cursor.execute('INSERT INTO characteristics (name, value) VALUES (?, ?)', (name, value))
+        cursor.execute('''
+            INSERT INTO characteristics (name, value)
+            VALUES (?, ?)
+            ON CONFLICT(name) DO UPDATE SET value=excluded.value
+        ''', (name, value))
 
     conn.commit()
     conn.close()

@@ -24,7 +24,7 @@ async function loadCabinets() {
 
         const deleteButton = document.createElement('button');
         deleteButton.className = 'delete-btn';
-        deleteButton.textContent = '×';
+        deleteButton.textContent = 'x';
         deleteButton.onclick = () => deleteCabinet(cabinet.name);
 
         const computerList = document.createElement('div');
@@ -124,18 +124,28 @@ async function loadComputers(cabinetName) {
     computers.forEach(computer => {
         const computerDiv = document.createElement('div');
         computerDiv.className = 'computer-item';
+        computerDiv.setAttribute('data-name', computer.name); // Добавляем атрибут data-name
 
         const computerButton = document.createElement('button');
         computerButton.className = 'to_computer';
         computerButton.textContent = computer.name;
         computerButton.onclick = () => showCharacteristicsForm(cabinetName, computer.name);
 
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'delete-computer-btn';
+        deleteButton.textContent = 'x';
+        deleteButton.onclick = () => deleteComputer(cabinetName, computer.name);
+
         computerDiv.appendChild(computerButton);
+        computerDiv.appendChild(deleteButton);
         computerList.appendChild(computerDiv);
     });
 }
 
-// Показ формы для ввода характеристик
+
+
+
+// Показ формы для ввода характеристик с уже существующими значениями
 async function showCharacteristicsForm(cabinetName, computerName) {
     const contentDiv = document.querySelector('.content');
     contentDiv.innerHTML = `<h2>Характеристики для ${computerName}</h2>
@@ -151,30 +161,80 @@ async function showCharacteristicsForm(cabinetName, computerName) {
     container.innerHTML = '';
 
     characteristics.forEach(characteristic => {
+        const label = document.createElement('label');
+        label.textContent = characteristic.name;
+
         const input = document.createElement('input');
         input.type = 'text';
-        input.name = characteristic;
-        input.placeholder = characteristic;
+        input.name = characteristic.name;
+        input.value = characteristic.value;
+
+        container.appendChild(label);
         container.appendChild(input);
         container.appendChild(document.createElement('br'));
     });
 
-    document.getElementById('characteristics-form').addEventListener('submit', async function (event) {
+    const form = document.getElementById('characteristics-form');
+    form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const formData = new FormData(this);
+        const formData = new FormData(form);
         const data = {};
-        formData.forEach((value, key) => data[key] = value);
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
 
         await fetch(`/save_characteristics/${cabinetName}/${computerName}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ characteristics: data })
         });
 
         alert('Характеристики сохранены!');
     });
 }
+
+// Удалить кабинет
+async function deleteCabinet(cabinetName) {
+    if (!confirm(`Вы уверены, что хотите удалить кабинет "${cabinetName}"? Это действие удалит все оборудование и характеристики.`)) {
+        return;
+    }
+
+    const response = await fetch(`/delete_cabinet/${cabinetName}`, {
+        method: 'DELETE'
+    });
+
+    if (response.ok) {
+        alert(`Кабинет "${cabinetName}" был успешно удален.`);
+        loadCabinets();  // Перезагрузка списка кабинетов
+    } else {
+        alert('Ошибка при удалении кабинета.');
+    }
+}
+
+// Удаление оборудования
+async function deleteComputer(cabinetName, computerName) {
+    if (!confirm(`Вы уверены, что хотите удалить оборудование "${computerName}"? Все связанные характеристики будут удалены.`)) {
+        return;
+    }
+
+    const response = await fetch(`/delete_computer/${cabinetName}/${computerName}`, {
+        method: 'DELETE'
+    });
+
+    if (response.ok) {
+        alert(`Оборудование "${computerName}" было успешно удалено.`);
+
+        // Находим и удаляем элемент оборудования из DOM через атрибут data-name
+        const computerDiv = document.querySelector(`#computers-${cabinetName} .computer-item[data-name="${computerName}"]`);
+        if (computerDiv) {
+            computerDiv.remove();
+        }
+    } else {
+        alert('Ошибка при удалении оборудования.');
+    }
+}
+
+
+
 
 document.addEventListener('DOMContentLoaded', loadCabinets);
