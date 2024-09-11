@@ -19,7 +19,7 @@ async function loadCabinets() {
 
         const addComputerButton = document.createElement('button');
         addComputerButton.className = 'add-computer-btn';
-        addComputerButton.textContent = 'Добавить компьютер';
+        addComputerButton.textContent = 'Добавить оборудование';
         addComputerButton.onclick = () => addComputer(cabinet.name);
 
         const deleteButton = document.createElement('button');
@@ -43,7 +43,7 @@ async function loadCabinets() {
 
 // Добавление компьютера в кабинет
 async function addComputer(cabinetName) {
-    const computerName = prompt('Введите название компьютера:');
+    const computerName = prompt('Введите название оборудования:');
     if (computerName) {
         await fetch('/add_computer', {
             method: 'POST',
