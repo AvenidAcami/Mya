@@ -77,23 +77,26 @@ function addCabinet() {
 function showComputerForm(cabinetName) {
     const contentDiv = document.querySelector('.content');
     contentDiv.innerHTML = `
-        <h2>Добавить оборудование в кабинет ${cabinetName}</h2>
+        <h2>Добавить оборудование в кабинет ${cabinetName}.</h2>
         <form id="add-computer-form">
-            <label for="name">Название оборудования:</label>
-            <input type="text" id="name" name="name" required><br>
+            <div class='oborydovanie-form'>
+                <label for="name" id='obor-name'>Название оборудования:</label><br>
+                <input type="text" id="name" name="name" required><br>
+            </div>
+            <div class='oborydovanie-form'>
+                <label for="type" id='obor-type'>Тип оборудования:</label><br>
+                <select id="type" name="type">
+                    <option value="comp">Компьютер</option>
+                    <option value="laptop">Ноутбук</option>
+                    <option value="monitor">Монитор</option>
+                    <option value="projector">Проектор</option>
+                    <option value="printer">Принтер</option>
+                    <option value="monoblock">Моноблок</option>
+                    <option value="interactive_board">Интерактивная доска</option>
+                </select><br>
+            </div>
 
-            <label for="type">Тип оборудования:</label>
-            <select id="type" name="type">
-                <option value="comp">Компьютер</option>
-                <option value="laptop">Ноутбук</option>
-                <option value="monitor">Монитор</option>
-                <option value="projector">Проектор</option>
-                <option value="printer">Принтер</option>
-                <option value="monoblock">Моноблок</option>
-                <option value="interactive_board">Интерактивная доска</option>
-            </select><br>
-
-            <button type="submit">Добавить оборудование</button>
+            <button type="submit" class="add-computer-btn">Добавить оборудование</button>
         </form>
     `;
 
@@ -108,6 +111,12 @@ function showComputerForm(cabinetName) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ cabinet_name: cabinetName, name, type })
+        }).then(response => {
+            if (response.status === 204) {
+                loadCabinets();
+            } else {
+                alert("Оборудование с таким названием уже существует.");
+            }
         });
 
         loadComputers(cabinetName);
@@ -161,17 +170,23 @@ async function showCharacteristicsForm(cabinetName, computerName) {
     container.innerHTML = '';
 
     characteristics.forEach(characteristic => {
+        const characteristicsDiv = document.createElement('div');
+        characteristicsDiv.className = 'each_characteristics';
         const label = document.createElement('label');
+        label.className = 'characteristics-name';
         label.textContent = characteristic.name;
 
         const input = document.createElement('input');
+        input.className = 'characteristics-input';
         input.type = 'text';
         input.name = characteristic.name;
         input.value = characteristic.value;
 
-        container.appendChild(label);
-        container.appendChild(input);
-        container.appendChild(document.createElement('br'));
+        characteristicsDiv.appendChild(label);
+        characteristicsDiv.appendChild(document.createElement('br'))
+        characteristicsDiv.appendChild(input);
+        characteristicsDiv.appendChild(document.createElement('br'));
+        container.appendChild(characteristicsDiv);
     });
 
     const form = document.getElementById('characteristics-form');
