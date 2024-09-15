@@ -136,12 +136,12 @@ def get_characteristics(cabinet_name, computer_name):
 
     # Возможные характеристики в зависимости от типа оборудования
     characteristics_template = {
-        "comp": ["Инвентарный номер", "Процессор", "ОЗУ", "Накопитель"],
-        "laptop": ["Инвентарный номер", "Процессор", "ОЗУ", "Накопитель"],
+        "comp": ["Инвентарный номер", "Процессор", "ОЗУ", "Накопитель", "Наличие MS Excel", "Наличие MS Word", "Наличие AutoCAD", "Наличие Pascal", "Наличие Python"],
+        "laptop": ["Инвентарный номер", "Процессор", "ОЗУ", "Накопитель", "Наличие MS Excel", "Наличие MS Word", "Наличие AutoCAD", "Наличие Pascal", "Наличие Python"],
         "monitor": ["Инвентарный номер", "Модель"],
         "projector": ["Инвентарный номер", "Модель"],
-        "printer": ["Инвентарный номер", "Модель", "Сетевой принтер/нет"],
-        "monoblock": ["Инвентарный номер", "Процессор", "ОЗУ", "Жесткий диск"],
+        "printer": ["Инвентарный номер", "Модель", "Сетевой принтер (да/нет)"],
+        "monoblock": ["Инвентарный номер", "Процессор", "ОЗУ", "Жесткий диск", "Наличие MS Excel", "Наличие MS Word", "Наличие AutoCAD", "Наличие Pascal", "Наличие Python"],
         "interactive_board": ["Инвентарный номер", "Производитель"]
     }
 
@@ -152,7 +152,7 @@ def get_characteristics(cabinet_name, computer_name):
     saved_characteristics = {row[0]: row[1] for row in cursor.fetchall()}
     conn.close()
 
-    # Возвращаем шаблон характеристик с сохраненными значениями, если они есть
+    # Возвращаем шаблон характеристик с сохраненными значениями, если они Наличие
     characteristics = []
     for characteristic in characteristics_template.get(computer_type, []):
         characteristics.append({
@@ -242,6 +242,7 @@ def save_characteristics(cabinet_name, computer_name):
     conn.close()
 
     return '', 204
+
 
 if __name__ == '__main__':
     init_main_db()

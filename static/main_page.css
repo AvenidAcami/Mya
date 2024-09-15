@@ -83,7 +83,8 @@ main {
   margin-left: 20px; /* Лесенка для списка компьютеров */
 }
 
-.add-cabinet-btn{
+.add-cabinet-btn,
+.show-main-page-btn{
   background-color: #3e4da2;
   border: none;
   color: white;
@@ -119,7 +120,8 @@ main {
 .add-cabinet-btn:hover,
 .add-computer-btn:hover,
 .to_computer:hover,
-.cabinet_button:hover {
+.cabinet_button:hover,
+.show-main-page-btn:hover {
   background-color: #394462; /* Изменение цвета кнопки при наведении */
 }
 
@@ -168,7 +170,7 @@ main {
 }
 
 h2 {
-  color: #1e90ff;
+  color: #505050;
 }
 
 .cab_and_but_div {
@@ -274,4 +276,42 @@ h2 {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 16pt;
   color: #1e90ff;
+}
+
+.save_characterist{
+  background-color: #5e71dc;
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  text-align: justify;
+  text-decoration: none;
+  /* display: inline-block; */
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12pt;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 2px;
+  transition: background-color 0.3s ease;
+  max-width: 100%;
+  overflow: hidden;
+  min-width: 350px;
+  /* word-wrap:break-word; */
+  border: solid 1px blue;
+}
+
+.save_characterist:hover{
+  background-color: #394462;
+}
+
+.instructions{
+  margin-bottom: 30px;
+  margin-left: 50px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12pt;
+}
+
+.instruction_items{
+  margin-left: 30px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12pt;
 }

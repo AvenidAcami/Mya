@@ -73,6 +73,55 @@ function addCabinet() {
     });
 }
 
+function showMainPage() {
+    const contendDiv = document.querySelector('.content');
+    contendDiv.innerHTML = `
+    <div class="top_main_info">
+                    <h2 id="main_header">Управление оборудованием.</h2>
+                </div>
+                <div class="main_info">
+                    <div class="instructions">
+                        <h2>Как добавить кабинет через сайт: </h2>
+                        <div class="instruction_items">
+                            <ol>
+                                <li>На боковой панели нажать на кнопку "Добавить кабинет".</li>
+                                <li>Выбрать название кабинета.</li>
+                                <li>Нажать "Ок".</li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div class="instructions">
+                        <h2>Как добавить оборудование через сайт: </h2>
+                        <div class="instruction_items">
+                            <ol>
+                                <li>На боковой панели выбрать кабинет, в который нужно добавить обоурдование.</li>
+                                <li>В открывшейся форме выбрать название оборудования и его тип.</li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div class="instructions">
+                        <h2>Как редактировать характеристики оборудования через сайт: </h2>
+                        <div class="instruction_items">
+                            <ol>
+                                <li>В боковой панели выбрать нужный кабинет.</li>
+                                <li>Там же выбрать нужное оборудование. (После изменения нужно нажать на кнопку "Сохранить характеристики", иначе изменения не сохранятся.)</li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div class="instructions">
+                        <h2>Как добавить оборудование через add_item.py: </h2>
+                        <div class="instruction_items">
+                            <ol>
+                                <li>Открыть файл add_item.py.</li>
+                                <li>Ввести название кабинета, в который нужно добавить оборудование и нажать "Enter".</li>
+                                <li>Ввести инвентарный номер и нажать "Enter".</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+    `;
+}
+
 // Добавление компьютера
 function showComputerForm(cabinetName) {
     const contentDiv = document.querySelector('.content');
@@ -152,15 +201,13 @@ async function loadComputers(cabinetName) {
 }
 
 
-
-
 // Показ формы для ввода характеристик с уже существующими значениями
 async function showCharacteristicsForm(cabinetName, computerName) {
     const contentDiv = document.querySelector('.content');
     contentDiv.innerHTML = `<h2>Характеристики для ${computerName}</h2>
         <form id="characteristics-form">
             <div id="characteristics-container"></div>
-            <button type="submit">Сохранить характеристики</button>
+            <button type="submit" class="save_characterist">Сохранить характеристики</button>
         </form>`;
 
     const response = await fetch(`/get_characteristics/${cabinetName}/${computerName}`);
@@ -248,7 +295,6 @@ async function deleteComputer(cabinetName, computerName) {
         alert('Ошибка при удалении оборудования.');
     }
 }
-
 
 
 
